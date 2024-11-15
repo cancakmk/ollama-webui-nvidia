@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  openWebUI:
+    image: ghcr.io/open-webui/open-webui:main
+    restart: always
+    ports:
+      - "3000:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - open-webui-local:/app/backend/data
+
+  ollama:
+    image: ollama/ollama:0.1.34
+    runtime: nvidia  # GPU kullanımı için nvidia runtime
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-local:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all  # Tüm GPU'ları görünür yapmak için
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]  # GPU kullanımı için
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  ollama-local:
+    external: true
+  open-webui-local:
+    external: true
